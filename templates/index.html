@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Scraper - Extração de Dados</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0077b5;
+            --secondary-color: #00a0dc;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --dark-color: #2c3e50;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 30px auto;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header-section h1 {
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 2.5rem;
+        }
+        
+        .header-section p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content-section {
+            padding: 40px 30px;
+        }
+        
+        .url-input-area {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .url-input-area:hover {
+            border-color: var(--primary-color);
+            background: #fff;
+        }
+        
+        .url-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .url-item:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .url-text {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        .btn-linkedin {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-linkedin:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 119, 181, 0.3);
+        }
+        
+        .btn-add-url {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .btn-add-url:hover {
+            background: #218838;
+            color: white;
+        }
+        
+        .progress-section {
+            display: none;
+            margin: 30px 0;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-running {
+            background: #ffc107;
+        }
+        
+        .status-completed {
+            background: var(--success-color);
+        }
+        
+        .status-error {
+            background: var(--danger-color);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .results-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table thead {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 119, 181, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1><i class="bi bi-linkedin"></i> LinkedIn Scraper</h1>
+            <p>Extraia dados de perfis do LinkedIn de forma automática e eficiente</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content-section">
+            <!-- URL Input Area -->
+            <div class="url-input-area">
+                <h4 class="mb-4"><i class="bi bi-link-45deg"></i> Adicionar URLs de Perfis</h4>
+                
+                <div class="input-group mb-3">
+                    <input type="url" 
+                           id="urlInput" 
+                           class="form-control form-control-lg" 
+                           placeholder="https://linkedin.com/in/nome-do-perfil"
+                           onkeypress="if(event.key === 'Enter') addUrl()">
+                    <button class="btn btn-add-url" onclick="addUrl()">
+                        <i class="bi bi-plus-circle"></i> Adicionar
+                    </button>
+                </div>
+                
+                <div id="urlList"></div>
+                
+                <div class="mt-3">
+                    <button class="btn btn-linkedin btn-lg" onclick="startScraping()" id="startBtn">
+                        <i class="bi bi-play-circle"></i> Iniciar Extração
+                    </button>
+                    <button class="btn btn-secondary btn-lg ms-2" onclick="clearUrls()">
+                        <i class="bi bi-trash"></i> Limpar
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Progress Section -->
+            <div class="progress-section" id="progressSection">
+                <div class="status-card">
+                    <h5><i class="bi bi-activity"></i> Status da Extração</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="status-indicator status-running" id="statusIndicator"></span>
+                        <span id="statusText">Iniciando...</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             id="progressBar" 
+                             role="progressbar" 
+                             style="width: 0%">
+                        </div>
+                    </div>
+                    <small class="text-muted" id="progressDetails">Aguardando início...</small>
+                </div>
+            </div>
+            
+            <!-- Results Section -->
+            <div id="resultsSection" style="display: none;">
+                <!-- Statistics -->
+                <div class="stats-grid" id="statsGrid"></div>
+                
+                <!-- Results Table -->
+                <div class="results-table">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Cargo</th>
+                                    <th>Empresa</th>
+                                    <th>Localização</th>
+                                    <th>Telefone</th>
+                                    <th>E-mail</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Download Button -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-success btn-lg" onclick="downloadResults()" id="downloadBtn">
+                        <i class="bi bi-download"></i> Baixar Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let urls = [];
+        let currentTaskId = null;
+        let statusInterval = null;
+        
+        function addUrl() {
+            const input = document.getElementById('urlInput');
+            const url = input.value.trim();
+            
+            if (!url) {
+                showAlert('Por favor, insira uma URL', 'warning');
+                return;
+            }
+            
+            // Validar URL
+            if (!url.includes('linkedin.com/in/')) {
+                showAlert('URL inválida. Use URLs do tipo: linkedin.com/in/nome-do-perfil', 'danger');
+                return;
+            }
+            
+            // Verificar duplicata
+            if (urls.includes(url)) {
+                showAlert('Esta URL já foi adicionada', 'warning');
+                return;
+            }
+            
+            urls.push(url);
+            input.value = '';
+            updateUrlList();
+            showAlert('URL adicionada com sucesso!', 'success');
+        }
+        
+        function removeUrl(index) {
+            urls.splice(index, 1);
+            updateUrlList();
+        }
+        
+        function updateUrlList() {
+            const urlList = document.getElementById('urlList');
+            const startBtn = document.getElementById('startBtn');
+            
+            if (urls.length === 0) {
+                urlList.innerHTML = '<p class="text-muted">Nenhuma URL adicionada ainda</p>';
+                startBtn.disabled = true;
+            } else {
+                urlList.innerHTML = urls.map((url, index) => `
+                    <div class="url-item">
+                        <div class="url-text">${url}</div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeUrl(${index})">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `).join('');
+                startBtn.disabled = false;
+            }
+        }
+        
+        function clearUrls() {
+            urls = [];
+            updateUrlList();
+        }
+        
+        async function startScraping() {
+            if (urls.length === 0) {
+                showAlert('Adicione pelo menos uma URL', 'warning');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ urls: urls })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentTaskId = data.task_id;
+                    showProgress();
+                    startStatusMonitoring();
+                    showAlert('Extração iniciada com sucesso!', 'success');
+                } else {
+                    showAlert(data.error || 'Erro ao iniciar extração', 'danger');
+                }
+            } catch (error) {
+                showAlert('Erro de conexão com o servidor', 'danger');
+                console.error(error);
+            }
+        }
+        
+        function showProgress() {
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('startBtn').disabled = true;
+        }
+        
+        function startStatusMonitoring() {
+            if (statusInterval) {
+                clearInterval(statusInterval);
+            }
+            
+            statusInterval = setInterval(async () => {
+                if (!currentTaskId) return;
+                
+                try {
+                    const response = await fetch(`/api/status/${currentTaskId}`);
+                    const status = await response.json();
+                    
+                    updateProgress(status);
+                    
+                    if (status.status === 'completed' || status.status === 'error') {
+                        clearInterval(statusInterval);
+                        if (status.status === 'completed') {
+                            showResults(status);
+                        } else {
+                            showAlert('Erro na extração: ' + status.error, 'danger');
+                            resetUI();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar status:', error);
+                }
+            }, 2000);
+        }
+        
+        function updateProgress(status) {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const progressBar = document.getElementById('progressBar');
+            const progressDetails = document.getElementById('progressDetails');
+            
+            switch (status.status) {
+                case 'running':
+                    statusIndicator.className = 'status-indicator status-running';
+                    statusText.textContent = 'Extraindo dados...';
+                    progressBar.style.width = '50%';
+                    progressDetails.textContent = `Processando ${status.total_urls || 0} perfis...`;
+                    break;
+                case 'completed':
+                    statusIndicator.className = 'status-indicator status-completed';
+                    statusText.textContent = 'Extração concluída!';
+                    progressBar.style.width = '100%';
+                    progressBar.className = 'progress-bar bg-success';
+                    progressDetails.textContent = `${status.success} de ${status.total} perfis extraídos com sucesso`;
+                    break;
+                case 'error':
+                    statusIndicator.className = 'status-indicator status-error';
+                    statusText.textContent = 'Erro na extração';
+                    progressBar.style.width = '100%';
+                    progressBar.className = 'progress-bar bg-danger';
+                    progressDetails.textContent = status.error;
+                    break;
+            }
+        }
+        
+        function showResults(status) {
+            const resultsSection = document.getElementById('resultsSection');
+            const statsGrid = document.getElementById('statsGrid');
+            const resultsTableBody = document.getElementById('resultsTableBody');
+            
+            // Estatísticas
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${status.total}</div>
+                    <div class="stat-label">Total de Perfis</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${status.success}</div>
+                    <div class="stat-label">Extraídos com Sucesso</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${status.total - status.success}</div>
+                    <div class="stat-label">Com Erro</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${((status.success / status.total) * 100).toFixed(1)}%</div>
+                    <div class="stat-label">Taxa de Sucesso</div>
+                </div>
+            `;
+            
+            // Tabela de resultados
+            resultsTableBody.innerHTML = status.results.map(result => {
+                if (result.erro) {
+                    return `
+                        <tr>
+                            <td colspan="6" class="text-danger">
+                                <i class="bi bi-exclamation-triangle"></i> Erro: ${result.erro}
+                            </td>
+                            <td><span class="badge bg-danger">Erro</span></td>
+                        </tr>
+                    `;
+                } else {
+                    return `
+                        <tr>
+                            <td>${result.nome || 'Não encontrado'}</td>
+                            <td>${result.cargo || 'Não encontrado'}</td>
+                            <td>${result.empresa || 'Não encontrado'}</td>
+                            <td>${result.localizacao || 'Não encontrado'}</td>
+                            <td>${result.telefone || 'Não encontrado'}</td>
+                            <td>${result.email || 'Não encontrado'}</td>
+                            <td><span class="badge bg-success">Sucesso</span></td>
+                        </tr>
+                    `;
+                }
+            }).join('');
+            
+            resultsSection.style.display = 'block';
+        }
+        
+        async function downloadResults() {
+            if (!currentTaskId) return;
+            
+            try {
+                window.location.href = `/api/download/${currentTaskId}`;
+                showAlert('Download iniciado!', 'success');
+            } catch (error) {
+                showAlert('Erro ao baixar arquivo', 'danger');
+                console.error(error);
+            }
+        }
+        
+        function resetUI() {
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            currentTaskId = null;
+        }
+        
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-custom`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const container = document.querySelector('.content-section');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUrlList();
+        });
+    </script>
+</body>
+</html>
