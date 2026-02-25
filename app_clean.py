@@ -129,7 +129,8 @@ def download_results(task_id):
         with open(filepath, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = [
                 'Nome', 
-                'Cargo', 
+                'Cargo Atual', 
+                'Último Cargo', 
                 'Empresa', 
                 'Localização', 
                 'Telefone', 
@@ -146,7 +147,8 @@ def download_results(task_id):
                 # Limpar e organizar dados antes de salvar
                 row_data = {
                     'Nome': result.get('nome', 'Não encontrado'),
-                    'Cargo': result.get('cargo', 'Não encontrado'),
+                    'Cargo Atual': result.get('cargo_atual', 'Não encontrado'),
+                    'Último Cargo': result.get('ultimo_cargo', 'Não encontrado'),
                     'Empresa': result.get('empresa', 'Não encontrado'),
                     'Localização': result.get('localizacao', 'Não encontrado'),
                     'Telefone': result.get('telefone', 'Não encontrado'),
